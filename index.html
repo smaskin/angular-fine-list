@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html ng-app>
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css'>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+	<script>
+		function defaultCtrl($scope) {
+			$scope.fines = [{
+				fine_id: 1234098,
+				date: '2016.01 .01',
+				protocol: '667 AA2021572',
+				sum: 500,
+				discount: true,
+				article: '12.9 ч .2',
+				location: 'Казань, ул.Мусина 61 в'
+			}, {
+				fine_id: 1234098,
+				date: '2016.09 .01',
+				protocol: '667 AA2025753',
+				sum: 700,
+				article: '12.9 ч .2',
+				location: 'Казань, ул.Мусина 61 в'
+			}, {
+				fine_id: 1234098,
+				date: '2016.08 .15',
+				protocol: '667 AA2087620',
+				sum: 1500,
+				discount: true,
+				article: '12.9 ч .2',
+				location: 'Казань,ул.Мусина 61 в'
+			}, {
+				fine_id: 1234098,
+				date: '2017.06 .23',
+				protocol: '667 AA0985678',
+				sum: 3000,
+				article: '12.9 ч .2',
+				location: 'Казань, ул.Мусина 61 в'
+			}, {
+				fine_id: 1234098,
+				date: '2016.09 .14',
+				protocol: '667 AA2786543',
+				sum: 800,
+				article: '13.9 ч .2',
+				location: 'Казань, ул.Мусина 61 в'
+			}, {
+				fine_id: 1234098,
+				date: '2016.09 .04',
+				protocol: '667 AA9087654',
+				sum: 500,
+				discount: true,
+				article: '12.9 ч .2',
+				location: 'Казань, ул.Мусина 61 в'
+			}];
+
+			$scope.column = 'date';
+			$scope.reverse = true;
+
+			$scope.sortBy = function(column) {
+				$scope.reverse = ($scope.column === column) ? !$scope.reverse : false;
+				$scope.column = column;
+			};
+
+			$scope.showInfo = function(protocol) {
+				for (let i = 0; i < $scope.fines.length; i++) {
+					if ($scope.fines[i].protocol === protocol) {
+						$scope.infoBox = $scope.fines[i];
+						return;
+					}
+				}
+			};
+
+			$scope.isExpired = function(date) {
+				return new Date() - new Date(date) > 60 * 24 * 60 * 60 * 1000;
+			};
+
+			$scope.discountFilter = function (fine) {
+				if($scope.discountOnly && !fine.discount)
+					fine.checked = false;
+				return !$scope.discountOnly || fine.discount;
+			};
+
+			$scope.getTotal = function () {
+				let total = 0;
+				for(let i = 0; i < $scope.fines.length; i++){
+					if ($scope.fines[i].checked) {
+						total += $scope.fines[i].sum;
+					}
+				}
+				return total;
+			};
+		}
+	</script>
+	<style>
+		.sort:after{content:' \25B4'}
+		.sort.reverse:after{content:'\25BE'}
+	</style>
+</head>
+<body>
+<div class="container" ng-controller="defaultCtrl">
+	<div class="row">
+		<div class="col-md-6">
+			<table class="table">
+				<tr>
+					<th></th>
+					<th>
+						<a href="" ng-click="sortBy('date')">Дата</a>
+						<span class="sort" ng-show="column == 'date'" ng-class="{reverse: reverse}"></span>
+					</th>
+					<th>Протокол</th>
+					<th>
+						<a href="" ng-click="sortBy('sum')">Сумма</a>
+						<span class="sort" ng-show="column == 'sum'" ng-class="{reverse: reverse}"></span>
+					</th>
+				</tr>
+				<tr ng-repeat="fine in fines | orderBy:column:reverse | filter:discountFilter" ng-class="{true: 'table-warning'}[isExpired(fine.date)]">
+					<td><input type="checkbox" ng-model="fine.checked"></td>
+					<td>{{fine.date}}</td>
+					<td><button class="btn btn-primary btn-sm" href="" ng-click="showInfo(fine.protocol)">{{fine.protocol}}</button></td>
+					<td>{{fine.sum}}</td>
+				</tr>
+			</table>
+			<div class="alert alert-success">
+				<label><input type="checkbox" ng-model="discountOnly"> Показать только со скдкой</label>
+			</div>
+			<div class="alert alert-danger" ng-show="getTotal()">
+				Выбрано {{(fines|filter:{checked:true}).length}}. Итого {{getTotal()}}
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="alert alert-info" ng-show="infoBox">
+				<h4 class="alert-heading">{{infoBox.protocol}}</h4>
+				<ul>
+					<li>ID: {{infoBox.fine_id}}</li>
+					<li>Сумма: {{infoBox.sum}}</li>
+					<li>Дата: {{infoBox.date}}</li>
+					<li>Время: {{infoBox.article}}</li>
+					<li>Адрес: {{infoBox.location}}</li>
+					<li class="warning" ng-show="infoBox.discount">Скидка</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
